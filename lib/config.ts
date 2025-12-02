@@ -15,12 +15,12 @@ export const STARTER_PROMPTS: StartScreenPrompt[] = [
   {
     label: "Legal help / Ayuda legal",
     prompt: "I need legal help related to migration.",
-    icon: "scale-balanced",
+    icon: "circle-question",
   },
   {
     label: "Financial help / Ayuda financiera",
     prompt: "I need information about financial or economic support.",
-    icon: "money-bill",
+    icon: "circle-question",
   },
 ];
 
