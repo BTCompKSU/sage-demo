@@ -3,6 +3,8 @@
 import { useCallback } from "react";
 import { ChatKitPanel, type FactAction } from "@/components/ChatKitPanel";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useWhisperRecorder } from "@/components/useWhisperRecorder";
+import { PLACEHOLDER_INPUT } from "@/lib/config"; // this is your "Ask anything..." placeholder
 
 export default function App() {
   const { scheme, setScheme } = useColorScheme();
@@ -19,15 +21,60 @@ export default function App() {
     }
   }, []);
 
+  // Whisper hook: speak & send
+  const { isRecording, isTranscribing, startRecording, stopRecording } =
+    useWhisperRecorder((text) => {
+      // Find the ChatKit input textarea by its placeholder
+      const textarea = document.querySelector(
+        `textarea[placeholder="${PLACEHOLDER_INPUT}"]`
+      ) as HTMLTextAreaElement | null;
+
+      if (!textarea) {
+        console.warn("ChatKit textarea not found");
+        return;
+      }
+
+      // Set the text value
+      textarea.value = text;
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+
+      // Fire Enter key to submit (speak & send)
+      const enterEvent = new KeyboardEvent("keydown", {
+        key: "Enter",
+        code: "Enter",
+        bubbles: true,
+      });
+      textarea.dispatchEvent(enterEvent);
+    });
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-end bg-slate-100 dark:bg-slate-950">
-      <div className="mx-auto w-full max-w-5xl">
+      <div className="mx-auto w-full max-w-5xl relative">
         <ChatKitPanel
           theme={scheme}
           onWidgetAction={handleWidgetAction}
           onResponseEnd={handleResponseEnd}
           onThemeRequest={setScheme}
         />
+
+        {/* Floating mic button inside the chat iframe UI */}
+        <button
+          type="button"
+          onClick={isRecording ? stopRecording : startRecording}
+          disabled={isTranscribing}
+          className="fixed bottom-4 right-4 px-4 py-2 rounded-full shadow-md text-sm"
+          style={{
+            background: "#0069b4",
+            color: "#fff",
+            opacity: isTranscribing ? 0.7 : 1,
+          }}
+        >
+          {isTranscribing
+            ? "Transcribing..."
+            : isRecording
+            ? "Stop"
+            : "🎤 Hablar"}
+        </button>
       </div>
     </main>
   );
