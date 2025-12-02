@@ -30,7 +30,8 @@ export const PLACEHOLDER_INPUT =
 
 // Big heading text at the top of the empty chat
 export const GREETING =
-  "Hola, soy el asistente de RecursosCAM. / Hi, I’m the RecursosCAM assistant. Ask me your question about social, legal, or financial services and I will look for options that match your situation.";
+  "Welcome / Bienvenido. How can I help you today? / ¿En qué puedo ayudarte hoy?";
+";
 
 export const getThemeConfig = (theme: ColorScheme): ThemeOption => ({
   color: {
@@ -45,11 +46,5 @@ export const getThemeConfig = (theme: ColorScheme): ThemeOption => ({
     },
   },
   radius: "round",
-
-  // Add this block to remove bold styling
-  startScreen: {
-    header: {
-      fontWeight: 400 // normal weight
-    }
-  }
 });
+
