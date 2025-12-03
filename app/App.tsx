@@ -73,7 +73,7 @@ export default function App() {
             ? "Transcribing..."
             : isRecording
             ? "Stop"
-            : "🎤 Hablar"}
+            : "🎤 Talk/Hablar"}
         </button>
       </div>
     </main>
