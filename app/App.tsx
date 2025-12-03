@@ -1,3 +1,4 @@
+// app/App.tsx
 "use client";
 
 import { useCallback } from "react";
@@ -21,6 +22,8 @@ export default function App() {
   }, []);
 
   const sendIntoChatKit = useCallback((text: string) => {
+    console.log("sendIntoChatKit called with:", text);
+
     const doc = document;
 
     const el =
@@ -35,7 +38,7 @@ export default function App() {
       (doc.querySelector('[contenteditable="true"]') as HTMLElement | null);
 
     if (!el) {
-      // Chat input not ready – nothing to send into, so just skip
+      console.warn("sendIntoChatKit: input element not found");
       return;
     }
 
