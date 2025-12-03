@@ -21,44 +21,48 @@ export default function App() {
   }, []);
 
   const sendIntoChatKit = useCallback((text: string) => {
-    // Scope the search to the ChatKit root container so
-    // we don't pick up random WP textareas
-    const root = document.getElementById("rcam-chat-root");
+    const doc = document;
 
-    if (!root) {
-      console.warn("ChatKit root not found");
+    // Try in order of most specific → most generic
+    const el =
+      (doc.querySelector(
+        '[placeholder*="Type or write your question here"]'
+      ) as HTMLInputElement | HTMLTextAreaElement | null) ||
+      (doc.querySelector(
+        '[placeholder*="Ask anything"]'
+      ) as HTMLInputElement | HTMLTextAreaElement | null) ||
+      (doc.querySelector(
+        "textarea"
+      ) as HTMLTextAreaElement | null) ||
+      (doc.querySelector(
+        'input[type="text"]'
+      ) as HTMLInputElement | null) ||
+      (doc.querySelector(
+        '[contenteditable="true"]'
+      ) as HTMLElement | null);
+
+    if (!el) {
+      console.warn("ChatKit input element not found");
       return;
     }
 
-    // Try a few sensible selectors
-    const candidate =
-      (root.querySelector(
-        'textarea[placeholder*="Type or write your question here"]'
-      ) as HTMLTextAreaElement | null) ||
-      (root.querySelector(
-        'textarea[placeholder*="Ask anything"]'
-      ) as HTMLTextAreaElement | null) ||
-      (root.querySelector("textarea") as HTMLTextAreaElement | null);
-
-    if (!candidate) {
-      // If the user clicks the mic before ChatKit finishes mounting,
-      // we just bail out quietly.
-      console.warn("ChatKit textarea not found");
-      return;
+    // Set value depending on element type
+    if ("value" in el) {
+      (el as HTMLInputElement | HTMLTextAreaElement).value = text;
+    } else {
+      el.textContent = text;
     }
 
-    const textarea = candidate;
+    // Trigger React's change handling
+    el.dispatchEvent(new Event("input", { bubbles: true }));
 
-    textarea.value = text;
-    textarea.dispatchEvent(new Event("input", { bubbles: true }));
-
+    // Simulate pressing Enter to send the message
     const enterEvent = new KeyboardEvent("keydown", {
       key: "Enter",
       code: "Enter",
       bubbles: true,
     });
-
-    textarea.dispatchEvent(enterEvent);
+    el.dispatchEvent(enterEvent);
   }, []);
 
   const { isRecording, isTranscribing, startRecording, stopRecording } =
@@ -66,10 +70,7 @@ export default function App() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-end bg-slate-100 dark:bg-slate-950">
-      <div
-        id="rcam-chat-root"
-        className="mx-auto w-full max-w-5xl relative"
-      >
+      <div className="mx-auto w-full max-w-5xl relative">
         <ChatKitPanel
           theme={scheme}
           onWidgetAction={handleWidgetAction}
