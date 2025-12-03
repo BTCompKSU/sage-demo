@@ -63,7 +63,7 @@ export function useWhisperRecorder(
       const SILENCE_THRESHOLD = 0.03;
       const SILENCE_DURATION_MS = 2000;
 
-      const loop = (time: number) => {
+      const loop = () => {
         if (!analyserRef.current || !isRecording) return;
 
         analyserRef.current.getByteTimeDomainData(data);
