@@ -22,8 +22,7 @@ export default function App() {
 
   const sendIntoChatKit = useCallback((text: string) => {
     const doc = document;
-
-    // Try in order of most specific → most generic
+  
     const el =
       (doc.querySelector(
         '[placeholder*="Type or write your question here"]'
@@ -40,11 +39,28 @@ export default function App() {
       (doc.querySelector(
         '[contenteditable="true"]'
       ) as HTMLElement | null);
-
+  
     if (!el) {
-      console.warn("ChatKit input element not found");
+      // Chat input not ready – nothing to send into, so just skip
       return;
     }
+  
+    if ("value" in el) {
+      (el as HTMLInputElement | HTMLTextAreaElement).value = text;
+    } else {
+      el.textContent = text;
+    }
+
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+
+  const enterEvent = new KeyboardEvent("keydown", {
+    key: "Enter",
+    code: "Enter",
+    bubbles: true,
+  });
+  el.dispatchEvent(enterEvent);
+}, []);
+
 
     // Set value depending on element type
     if ("value" in el) {
