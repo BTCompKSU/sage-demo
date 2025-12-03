@@ -60,8 +60,8 @@ export function useWhisperRecorder(
     sourceRef.current = source;
 
     const data = new Uint8Array(analyser.frequencyBinCount);
-    const SILENCE_THRESHOLD = 0.01;   // adjust if needed
-    const SILENCE_MS = 3000;          // 3 seconds of silence
+    const SILENCE_THRESHOLD = 0.03;      // was 0.01 – more forgiving
+    const SILENCE_DURATION_MS = 2000;    // ~2s of quiet before stop
 
     const loop = (time: number) => {
       if (!analyserRef.current || !isRecording) return;
@@ -76,19 +76,13 @@ export function useWhisperRecorder(
       }
       const rms = Math.sqrt(sum / data.length);
 
-      if (rms < SILENCE_THRESHOLD) {
-        if (silenceStartRef.current == null) {
-          silenceStartRef.current = time;
-        } else if (time - silenceStartRef.current >= SILENCE_MS) {
-          // Enough silence: auto-stop
-          stopRecording();
-          silenceStartRef.current = null;
-          return;
-        }
-      } else {
-        silenceStartRef.current = null;
-      }
-
+      if (rms > SILENCE_THRESHOLD) {
+        lastNonSilentRef.current = performance.now();
+      } else if (
+        performance.now() - lastNonSilentRef.current >
+        SILENCE_DURATION_MS
+      ) {
+      stopRecordingInternal();
       requestAnimationFrame(loop);
     };
 
