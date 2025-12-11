@@ -3,9 +3,13 @@
 import { useEffect } from "react";
 import Script from "next/script";
 
+type ChatKitElement = HTMLElement & {
+  setOptions?: (options: unknown) => void;
+};
+
 function getDeviceId() {
-  if (typeof window === "undefined") return "nunans-demo";
-  const key = "nunans-device-id";
+  if (typeof window === "undefined") return "sage-demo";
+  const key = "sage-device-id";
   let existing = window.localStorage.getItem(key);
   if (!existing) {
     existing = crypto.randomUUID();
@@ -17,7 +21,7 @@ function getDeviceId() {
 export default function HomePage() {
   useEffect(() => {
     function init() {
-      const el = document.getElementById("nunan-chat") as any;
+      const el = document.getElementById("sage-chat") as ChatKitElement | null;
       if (!el || typeof el.setOptions !== "function") {
         setTimeout(init, 300);
         return;
@@ -26,7 +30,6 @@ export default function HomePage() {
       el.setOptions({
         api: {
           // This assumes your existing API route is /api/chatkit/session
-          // (same as recoursCAM). If it’s different, just change the URL here.
           async getClientSecret(existingClientSecret?: string) {
             if (existingClientSecret) return existingClientSecret;
 
@@ -45,7 +48,7 @@ export default function HomePage() {
             }
 
             const data = await res.json();
-            return data.client_secret;
+            return data.client_secret as string;
           }
         },
 
@@ -105,7 +108,7 @@ export default function HomePage() {
 
         startScreen: {
           greeting:
-            "Hi there! I’m Sage, your Nunan’s Grow Guide from Nunan’s Garden Center. What can I help you grow today?",
+            "Hi there! I’m Sage, your sage’s Grow Guide from sage’s Garden Center. What can I help you grow today?",
           prompts: [
             {
               icon: "circle-question",
@@ -178,32 +181,3 @@ export default function HomePage() {
             }}
           >
             <img
-              src="https://media.designrush.com/agencies/406942/conversions/Sunrise-Marketing-logo-profile.jpg"
-              alt="Sunrise Marketing"
-              style={{
-                maxWidth: "220px",
-                height: "auto",
-                display: "inline-block"
-              }}
-            />
-          </div>
-
-          {/* Chat widget shell */}
-          <div
-            style={{
-              borderRadius: "20px",
-              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.12)",
-              overflow: "hidden",
-              background: "#ffffff"
-            }}
-          >
-            <openai-chatkit
-              id="nunan-chat"
-              style={{ display: "block", width: "100%", height: "640px" }}
-            />
-          </div>
-        </div>
-      </main>
-    </>
-  );
-}
