@@ -29,7 +29,6 @@ export default function HomePage() {
 
       el.setOptions({
         api: {
-          // This assumes your existing API route is /api/chatkit/session
           async getClientSecret(existingClientSecret?: string) {
             if (existingClientSecret) return existingClientSecret;
 
@@ -54,8 +53,6 @@ export default function HomePage() {
 
         header: {
           enabled: true,
-          // We’re showing our own logo header above the widget,
-          // so we hide the built-in title text.
           title: { enabled: false }
         },
 
@@ -65,7 +62,6 @@ export default function HomePage() {
           density: "normal",
           color: {
             grayscale: {
-              // Hue aligned with hex #264017 (≈ 98°)
               hue: 98,
               tint: 9,
               shade: 4
@@ -155,7 +151,6 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ChatKit web component script */}
       <Script
         src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js"
         strategy="afterInteractive"
@@ -173,7 +168,6 @@ export default function HomePage() {
         }}
       >
         <div style={{ width: "100%", maxWidth: "420px" }}>
-          {/* Centered logo header */}
           <div
             style={{
               textAlign: "center",
@@ -181,3 +175,31 @@ export default function HomePage() {
             }}
           >
             <img
+              src="https://media.designrush.com/agencies/406942/conversions/Sunrise-Marketing-logo-profile.jpg"
+              alt="Sunrise Marketing"
+              style={{
+                maxWidth: "220px",
+                height: "auto",
+                display: "inline-block"
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              borderRadius: "20px",
+              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.12)",
+              overflow: "hidden",
+              background: "#ffffff"
+            }}
+          >
+            <openai-chatkit
+              id="sage-chat"
+              style={{ display: "block", width: "100%", height: "640px" }}
+            />
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
