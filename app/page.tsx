@@ -61,12 +61,12 @@ export default function Page() {
           density: "normal",
           color: {
             grayscale: {
-              hue: 98, // ≈ hex #264017
+              hue: 98, // tuned toward #264017
               tint: 9,
               shade: 4
             },
             accent: {
-              primary: "#ffa200",
+              primary: "#264017",
               level: 1
             },
             surface: {
@@ -78,34 +78,37 @@ export default function Page() {
 
         startScreen: {
           greeting:
-            "Hi there! I'm Sage, your Grow Guide. What can I help you nurture today?",
+            "Hi there! I’m Sage, your Grow Guide from Sunrise. What can I help you grow today?",
           prompts: [
             {
               icon: "circle-question",
-              label: "Which flowers will thrive in my garden?",
-              prompt: "Which flowers will thrive in my garden?"
-            },
-            {
-              icon: "circle-question",
-              label: "Help me pick nonstop blooming plants",
-              prompt: "Help me choose flowering plants that bloom nonstop."
-            },
-            {
-              icon: "circle-question",
-              label: "Why aren't my flowers blooming?",
-              prompt: "My flowers are not blooming. What might be wrong?"
-            },
-            {
-              icon: "circle-question",
-              label: "Sunlight + soil → recommended plants",
+              label: "Looking for blooms?",
               prompt:
-                "I will tell you my sunlight and soil. Please recommend what will grow beautifully."
+                "Looking for blooms. Which flowers will thrive in my garden?"
             },
             {
               icon: "circle-question",
-              label: "Pollinator-friendly flowers",
+              label: "Nonstop color",
               prompt:
-                "What are the best pollinator-friendly flowers for my region?"
+                "I want nonstop color. Help me pick the perfect flowering plants."
+            },
+            {
+              icon: "circle-question",
+              label: "Not blooming?",
+              prompt:
+                "My flowers aren’t blooming. Can you help me figure out why?"
+            },
+            {
+              icon: "circle-question",
+              label: "Soil + sunlight",
+              prompt:
+                "Here’s my sunlight and soil. What will bloom beautifully there?"
+            },
+            {
+              icon: "circle-question",
+              label: "Pollinator-friendly",
+              prompt:
+                "I need pollinator-friendly flowers. What are the local favorites?"
             }
           ]
         }
@@ -140,32 +143,33 @@ export default function Page() {
             maxWidth: "420px",
             borderRadius: "20px",
             overflow: "hidden",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.12)"
+            boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
+            background: "#ffffff"
           }}
         >
-          {/* Simple logo + title block above the widget */}
+          {/* Logo + title header */}
           <div
             style={{
-              textAlign: "center",
-              padding: "16px 12px 8px 12px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "12px 16px",
               borderBottom: "1px solid #e5e7eb",
               background: "#ffffff"
             }}
           >
             <img
               src="https://media.designrush.com/agencies/406942/conversions/Sunrise-Marketing-logo-profile.jpg"
-              alt="Sunrise Marketing Logo"
+              alt="Sunrise Marketing"
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: "50%",
-                objectFit: "cover"
+                height: 48,
+                width: "auto",
+                objectFit: "contain"
               }}
             />
             <div
               style={{
-                marginTop: 8,
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: 600,
                 color: "#264017"
               }}
