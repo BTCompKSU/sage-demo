@@ -1,111 +1,185 @@
 "use client";
 
 import { useEffect } from "react";
-import { ChatKit } from "@openai/chatkit";
+
+type OpenAIChatKitElement = HTMLElement & {
+  setOptions: (options: unknown) => void;
+};
+
+const LOGO_URL =
+  "https://media.designrush.com/agencies/406942/conversions/Sunrise-Marketing-logo-profile.jpg";
 
 export default function Page() {
   useEffect(() => {
-    ChatKit.create({
-      api: {
-        endpoint: "/api/create-session",
-      },
+    const apply = () => {
+      const el = document.getElementById("sage-chat") as OpenAIChatKitElement | null;
+      if (!el) return;
 
-      // IMPORTANT: no ChatKit header config here
-      // We fully own the header in JSX below
+      if (typeof el.setOptions !== "function") {
+        setTimeout(apply, 50);
+        return;
+      }
 
-      theme: {
-        colorScheme: "light",
-        radius: "pill",
-        density: "normal",
-        color: {
-          accent: {
-            primary: "#2f6b2f",
-          },
-        },
-      },
-    });
+      el.setOptions(buildOptions());
+    };
+
+    apply();
   }, []);
 
   return (
     <main
       style={{
-        minHeight: "100vh",
+        width: "100vw",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+        background: "transparent",
+        overflow: "hidden",
         display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-start",
-        paddingTop: 24,
-        background: "#ffffff",
+        flexDirection: "column",
       }}
     >
+      {/* Single-row header (logo + title + refresh) */}
       <div
         style={{
-          width: 420,
-          borderRadius: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 14px",
+          borderBottom: "1px solid #e5e7eb",
           background: "#ffffff",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
-          overflow: "hidden",
         }}
       >
-        {/* HEADER — single flex container */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 16px",
-            borderBottom: "1px solid #e5e7eb",
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <img
+            src={LOGO_URL}
+            alt="Sunrise"
+            style={{ height: 34, width: "auto", display: "block" }}
+          />
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <img
-              src="https://sunrisenursery.com/logo.png"
-              alt="Sunrise"
-              style={{
-                height: 36,
-                width: "auto",
-              }}
-            />
-            <span
-              style={{
-                fontSize: 18,
-                fontWeight: 600,
-                color: "#1f3d1a",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Sage · Grow Guide
-            </span>
-          </div>
-
-          <button
-            title="Reset conversation"
-            onClick={() => window.location.reload()}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
               fontSize: 18,
-              color: "#2f6b2f",
+              fontWeight: 700,
+              color: "#264017",
+              whiteSpace: "nowrap",
+              lineHeight: 1,
             }}
           >
-            ↻
-          </button>
+            Sage · Grow Guide
+          </div>
         </div>
 
-        {/* CHATKIT MOUNT */}
-        <div
-          id="chatkit"
+        <button
+          type="button"
+          title="Reset"
+          onClick={() => window.location.reload()}
           style={{
-            height: 560,
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: 6,
+            borderRadius: 999,
+            color: "#264017",
+            fontSize: 18,
+            lineHeight: 1,
+          }}
+        >
+          ↻
+        </button>
+      </div>
+
+      {/* Chat fills the rest */}
+      <div style={{ flex: "1 1 auto", minHeight: 0, background: "#ffffff" }}>
+        <openai-chatkit
+          id="sage-chat"
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "block",
           }}
         />
       </div>
     </main>
   );
+}
+
+function buildOptions() {
+  return {
+    api: {
+      async getClientSecret(existingClientSecret?: string) {
+        const r = await fetch("/api/create-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            deviceId: "sage-grow-guide",
+            existingClientSecret: existingClientSecret ?? null,
+          }),
+        });
+
+        if (!r.ok) {
+          const text = await r.text().catch(() => "");
+          throw new Error(`create-session failed: ${r.status} ${text}`);
+        }
+
+        const data = (await r.json()) as { client_secret: string };
+        return data.client_secret;
+      },
+    },
+
+    theme: {
+      colorScheme: "light",
+      radius: "pill",
+      density: "normal",
+      color: {
+        grayscale: { hue: 94, tint: 9, shade: -3 },
+        accent: { primary: "#264017", level: 1 },
+        surface: { background: "#ffffff", foreground: "#ffffff" },
+      },
+    },
+
+    // IMPORTANT: do NOT set ChatKit header; we own the header in JSX
+    // header: { ... }  <-- leave this out
+
+    composer: {
+      placeholder: "Message the AI",
+      attachments: { enabled: true, maxCount: 5, maxSize: 10_485_760 },
+    },
+
+    startScreen: {
+      greeting:
+        "Hi there! I’m Sage, your Grow Guide from Sunrise. What can I help you grow today?",
+      prompts: [
+        {
+          icon: "circle-question",
+          label: "Looking for blooms?",
+          prompt:
+            "Looking for blooms? Ask me which flowers will thrive in your garden!",
+        },
+        {
+          icon: "circle-question",
+          label: "Nonstop color",
+          prompt:
+            "Want nonstop color? I can help you pick the perfect flowering plants.",
+        },
+        {
+          icon: "circle-question",
+          label: "Not blooming?",
+          prompt:
+            "Not sure why your flowers aren’t blooming? Let’s figure it out together!",
+        },
+        {
+          icon: "circle-question",
+          label: "Soil + sunlight",
+          prompt:
+            "Tell me your sunlight and soil—I’ll tell you what will bloom beautifully.",
+        },
+        {
+          icon: "circle-question",
+          label: "Pollinator-friendly",
+          prompt:
+            "Need pollinator-friendly flowers? I know all the local favorites.",
+        },
+      ],
+    },
+  };
 }
