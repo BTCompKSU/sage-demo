@@ -70,6 +70,14 @@ export default function Page() {
           }
         },
 
+        header: {
+                  enabled: true,
+                  title: {
+                    enabled: true,
+                    text: "Sage · Grow Guide"
+                }
+        },
+
         startScreen: {
           greeting:
             "Hi there! I'm Sage, your Grow Guide. What can I help you nurture today?",
