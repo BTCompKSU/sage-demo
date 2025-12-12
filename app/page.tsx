@@ -35,17 +35,12 @@ export default function Page() {
         },
       },
 
-      // ✅ This is what moves the white ChatKit surface lower (docked)
-      widgets: {
-        surface: {
-          placement: "bottom",
-          inset: 0,
-        },
-      },
-
       header: {
         title: "Sage · Grow Guide",
       },
+
+      // keep your theme + prompts etc in the workflow itself,
+      // or add them here if you previously had them in setOptions.
     });
   }, []);
 
@@ -58,16 +53,35 @@ export default function Page() {
         padding: 0,
         background: "transparent",
         overflow: "hidden",
+
+        /* This is what moves the widget LOWER */
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
       }}
     >
-      <openai-chatkit
-        id="sage-chat"
+      {/* Wrapper gives you spacing from the bottom/right if desired */}
+      <div
         style={{
           width: "100%",
           height: "100%",
-          display: "block",
+
+          /* Adjust these two to get it closer to your launcher button */
+          paddingRight: 0,
+          paddingBottom: 0,
+
+          boxSizing: "border-box",
         }}
-      />
+      >
+        <openai-chatkit
+          id="sage-chat"
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "block",
+          }}
+        />
+      </div>
     </main>
   );
 }
