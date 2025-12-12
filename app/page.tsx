@@ -49,18 +49,6 @@ export default function Page() {
           }
         },
 
-        header: {
-          enabled: true,
-          avatar: {
-            src: "https://media.designrush.com/agencies/406942/conversions/Sunrise-Marketing-logo-profile.jpg",
-            shape: "circle"
-          },
-          title: {
-            enabled: true,
-            text: "Sage · Grow Guide"
-          }
-        },
-
         theme: {
           colorScheme: "light",
           radius: "pill",
