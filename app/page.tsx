@@ -11,8 +11,8 @@ export default function Page() {
     let cancelled = false;
 
     (async () => {
-      // ✅ This registers the <openai-chatkit> custom element
-      await import("@openai/chatkit");
+      // ✅ Register the <openai-chatkit> custom element
+      await import("@openai/chatkit/web");
 
       if (cancelled) return;
 
