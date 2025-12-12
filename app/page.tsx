@@ -11,21 +11,19 @@ const LOGO_URL =
 
 export default function Page() {
   useEffect(() => {
-    const el = document.getElementById("sage-chat") as OpenAIChatKitElement | null;
-    if (!el) return;
+    const apply = () => {
+      const el = document.getElementById("sage-chat") as OpenAIChatKitElement | null;
+      if (!el) return;
 
-    // If the custom element hasn't upgraded yet, wait briefly.
-    if (typeof el.setOptions !== "function") {
-      const t = setTimeout(() => {
-        const el2 = document.getElementById("sage-chat") as OpenAIChatKitElement | null;
-        if (el2 && typeof el2.setOptions === "function") {
-          el2.setOptions(buildOptions());
-        }
-      }, 50);
-      return () => clearTimeout(t);
-    }
+      if (typeof el.setOptions !== "function") {
+        setTimeout(apply, 50);
+        return;
+      }
 
-    el.setOptions(buildOptions());
+      el.setOptions(buildOptions());
+    };
+
+    apply();
   }, []);
 
   return (
@@ -101,15 +99,15 @@ function buildOptions() {
       radius: "pill",
       density: "normal",
       color: {
-        // Hue equivalent for #264017 (approx.)
         grayscale: { hue: 94, tint: 9, shade: -3 },
         accent: { primary: "#264017", level: 1 },
         surface: { background: "#ffffff", foreground: "#ffffff" },
       },
     },
 
+    // ✅ FIX: title must be an object in your ChatKit build
     header: {
-      title: "Sage · Grow Guide",
+      title: { text: "Sage · Grow Guide" },
     },
 
     composer: {
