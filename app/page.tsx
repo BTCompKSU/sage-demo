@@ -31,7 +31,7 @@ export default function Page() {
       el.setOptions({
         api: {
           async getClientSecret() {
-            const res = await fetch("/api/chatkit/session", {
+            const res = await fetch("/api/create-session", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ deviceId: getDeviceId() })
