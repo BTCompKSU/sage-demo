@@ -1,80 +1,186 @@
 "use client";
 
 import { useEffect } from "react";
+import Script from "next/script";
 
-export default function Home() {
+type ChatKitElement = HTMLElement & {
+  setOptions?: (options: unknown) => void;
+};
+
+function getDeviceId() {
+  if (typeof window === "undefined") return "sage-grow-guide";
+  const key = "sage-grow-guide-device-id";
+  let existing = window.localStorage.getItem(key);
+  if (!existing) {
+    existing = crypto.randomUUID();
+    window.localStorage.setItem(key, existing);
+  }
+  return existing;
+}
+
+export default function Page() {
   useEffect(() => {
-    const el = document.querySelector("chat-kit");
+    function init() {
+      const el = document.getElementById("sage-chat") as ChatKitElement | null;
 
-    if (!el) return;
-
-    el.setOptions({
-      api: {
-        async getClientSecret(existingClientSecret?: string) {
-          const r = await fetch("/api/chatkit/session", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            }
-          });
-          if (!r.ok) throw new Error("Failed to fetch client secret");
-          const { client_secret } = await r.json();
-          return client_secret;
-        }
-      },
-
-      header: {
-        enabled: true,
-        title: {
-          enabled: true,
-          text: "Sage · Grow Guide"
-        }
-      },
-
-      theme: {
-        colorScheme: "light",
-        radius: "pill",
-        density: "normal",
-        color: {
-          grayscale: {
-            hue: 100,
-            tint: 9,
-            shade: 4
-          },
-          accent: {
-            primary: "#264017",
-            level: 1
-          }
-        }
-      },
-
-      startScreen: {
-        greeting: "Hi! I'm Sage, your Grow Guide. What can I help you grow today?",
-        prompts: [
-          { icon: "sparkles", label: "Looking for blooms?", prompt: "Which flowers will thrive in my garden?" },
-          { icon: "sparkles", label: "Nonstop color", prompt: "Help me pick flowering plants with continuous color." },
-          { icon: "sparkles", label: "Not blooming?", prompt: "Why aren’t my flowers blooming?" },
-          { icon: "sparkles", label: "Soil + Sunlight", prompt: "Here’s my soil and sunlight—what will bloom beautifully?" },
-          { icon: "sparkles", label: "Pollinators", prompt: "Which flowers attract local pollinators?" }
-        ]
+      if (!el || typeof el.setOptions !== "function") {
+        setTimeout(init, 300);
+        return;
       }
-    });
+
+      el.setOptions({
+        api: {
+          async getClientSecret() {
+            const res = await fetch("/api/chatkit/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ deviceId: getDeviceId() })
+            });
+
+            if (!res.ok) {
+              console.error("Failed to fetch client_secret", res.status);
+              throw new Error("Unable to create ChatKit session");
+            }
+
+            const data = await res.json();
+            return data.client_secret as string;
+          }
+        },
+
+        header: {
+          enabled: true,
+          title: {
+            enabled: true,
+            text: "Sage · Grow Guide"
+          }
+        },
+
+        theme: {
+          colorScheme: "light",
+          radius: "pill",
+          density: "normal",
+          color: {
+            grayscale: {
+              hue: 98, // ≈ hex #264017
+              tint: 9,
+              shade: 4
+            },
+            accent: {
+              primary: "#ffa200",
+              level: 1
+            },
+            surface: {
+              background: "#ffffff",
+              foreground: "#ffffff"
+            }
+          }
+        },
+
+        startScreen: {
+          greeting:
+            "Hi there! I'm Sage, your Grow Guide. What can I help you nurture today?",
+          prompts: [
+            {
+              icon: "circle-question",
+              label: "Which flowers will thrive in my garden?",
+              prompt: "Which flowers will thrive in my garden?"
+            },
+            {
+              icon: "circle-question",
+              label: "Help me pick nonstop blooming plants",
+              prompt: "Help me choose flowering plants that bloom nonstop."
+            },
+            {
+              icon: "circle-question",
+              label: "Why aren't my flowers blooming?",
+              prompt: "My flowers are not blooming. What might be wrong?"
+            },
+            {
+              icon: "circle-question",
+              label: "Sunlight + soil → recommended plants",
+              prompt:
+                "I will tell you my sunlight and soil. Please recommend what will grow beautifully."
+            },
+            {
+              icon: "circle-question",
+              label: "Pollinator-friendly flowers",
+              prompt:
+                "What are the best pollinator-friendly flowers for my region?"
+            }
+          ]
+        }
+      });
+    }
+
+    init();
   }, []);
 
   return (
-    <main style={{ display: "flex", justifyContent: "center", paddingTop: 40 }}>
-      {/* Custom logo header */}
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <img 
-          src="https://media.designrush.com/agencies/406942/conversions/Sunrise-Marketing-logo-profile.jpg"
-          alt="Sunrise Marketing Logo"
-          style={{ width: 60, height: 60, borderRadius: "50%" }}
-        />
-        <div style={{ marginTop: 10, fontSize: 20, fontWeight: 600 }}>Sage · Grow Guide</div>
-      </div>
+    <>
+      {/* ChatKit web component script */}
+      <Script
+        src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js"
+        strategy="afterInteractive"
+      />
 
-      {/* ChatKit widget */}
-      <chat-kit style={{ width: 400, height: 700 }} />
-    </main>
+      <main
+        style={{
+          margin: 0,
+          minHeight: "100vh",
+          padding: "20px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          background: "#f3f4f6"
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "420px",
+            borderRadius: "20px",
+            overflow: "hidden",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.12)"
+          }}
+        >
+          {/* Simple logo + title block above the widget */}
+          <div
+            style={{
+              textAlign: "center",
+              padding: "16px 12px 8px 12px",
+              borderBottom: "1px solid #e5e7eb",
+              background: "#ffffff"
+            }}
+          >
+            <img
+              src="https://media.designrush.com/agencies/406942/conversions/Sunrise-Marketing-logo-profile.jpg"
+              alt="Sunrise Marketing Logo"
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                objectFit: "cover"
+              }}
+            />
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 18,
+                fontWeight: 600,
+                color: "#264017"
+              }}
+            >
+              Sage · Grow Guide
+            </div>
+          </div>
+
+          {/* ChatKit widget */}
+          <openai-chatkit
+            id="sage-chat"
+            style={{ width: "100%", height: "600px", display: "block" }}
+          />
+        </div>
+      </main>
+    </>
   );
 }
