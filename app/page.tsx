@@ -2,26 +2,34 @@
 
 import { useEffect } from "react";
 
-type ChatKitElement = HTMLElement & {
-  setOptions: (options: unknown) => void;
-};
+declare global {
+  interface Window {
+    ChatKit?: {
+      create: (options: unknown) => void;
+    };
+  }
+}
+
+const LOGO_URL =
+  "https://media.designrush.com/agencies/406942/conversions/Sunrise-Marketing-logo-profile.jpg";
 
 export default function Page() {
   useEffect(() => {
-    let cancelled = false;
+    const scriptId = "openai-chatkit-cdn";
 
-    (async () => {
-      // ✅ Register the <openai-chatkit> custom element
-      await import("@openai/chatkit/web");
+    const init = () => {
+      const root = document.getElementById("chatkit-root");
+      if (!root) return;
 
-      if (cancelled) return;
+      if (!window.ChatKit?.create) {
+        console.error("ChatKit CDN loaded but window.ChatKit.create is missing");
+        return;
+      }
 
-      const el = document.getElementById("sage-chat");
-      if (!el) return;
+      window.ChatKit.create({
+        // Mount into our div
+        element: root,
 
-      const chatkit = el as unknown as ChatKitElement;
-
-      chatkit.setOptions({
         api: {
           async getClientSecret(existingClientSecret?: string) {
             const r = await fetch("/api/create-session", {
@@ -42,15 +50,81 @@ export default function Page() {
             return data.client_secret;
           },
         },
+
+        theme: {
+          colorScheme: "light",
+          radius: "pill",
+          density: "normal",
+          color: {
+            grayscale: { hue: 94, tint: 9, shade: -3 }, // hue for #264017
+            accent: { primary: "#264017", level: 1 },
+            surface: { background: "#ffffff", foreground: "#ffffff" },
+          },
+        },
+
         header: {
+          // Keep header simple here; we’ll render the logo ourselves above
           title: "Sage · Grow Guide",
         },
-      });
-    })();
 
-    return () => {
-      cancelled = true;
+        startScreen: {
+          greeting:
+            "Hi there! I’m Sage, your Grow Guide from Sunrise. What can I help you grow today?",
+          prompts: [
+            {
+              icon: "circle-question",
+              label: "Looking for blooms?",
+              prompt:
+                "Looking for blooms? Ask me which flowers will thrive in your garden!",
+            },
+            {
+              icon: "circle-question",
+              label: "Nonstop color",
+              prompt:
+                "Want nonstop color? I can help you pick the perfect flowering plants.",
+            },
+            {
+              icon: "circle-question",
+              label: "Not blooming?",
+              prompt:
+                "Not sure why your flowers aren’t blooming? Let’s figure it out together!",
+            },
+            {
+              icon: "circle-question",
+              label: "Soil + sunlight",
+              prompt:
+                "Tell me your sunlight and soil—I’ll tell you what will bloom beautifully.",
+            },
+            {
+              icon: "circle-question",
+              label: "Pollinator-friendly",
+              prompt:
+                "Need pollinator-friendly flowers? I know all the local favorites.",
+            },
+          ],
+        },
+
+        composer: {
+          placeholder: "Message the AI",
+          attachments: { enabled: true, maxCount: 5, maxSize: 10_485_760 },
+        },
+      });
     };
+
+    // Load ChatKit from CDN once
+    if (!document.getElementById(scriptId)) {
+      const s = document.createElement("script");
+      s.id = scriptId;
+
+      // ✅ Use the official ChatKit CDN entry used in the docs
+      // If your previous working app used a slightly different URL, use that same URL here.
+      s.src = "https://cdn.platform.openai.com/assets/ck1/chatkit.js";
+      s.async = true;
+      s.onload = init;
+      document.head.appendChild(s);
+    } else {
+      init();
+    }
   }, []);
 
   return (
@@ -62,16 +136,47 @@ export default function Page() {
         padding: 0,
         background: "transparent",
         overflow: "hidden",
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
       }}
     >
-      <openai-chatkit
-        id="sage-chat"
+      {/* “frameless” container */}
+      <div
         style={{
           width: "100%",
           height: "100%",
-          display: "block",
+          background: "transparent",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
         }}
-      />
+      >
+        {/* Your embedded header logo (centered) */}
+        <div
+          style={{
+            textAlign: "center",
+            padding: "10px 0 6px",
+            background: "transparent",
+          }}
+        >
+          <img
+            src={LOGO_URL}
+            alt="Sunrise logo"
+            style={{ height: 46, width: "auto", display: "inline-block" }}
+          />
+        </div>
+
+        {/* ChatKit mounts here */}
+        <div
+          id="chatkit-root"
+          style={{
+            width: "100%",
+            height: "100%",
+            background: "transparent",
+          }}
+        />
+      </div>
     </main>
   );
 }
