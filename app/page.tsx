@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Script from "next/script";
 
 type ChatKitElement = HTMLElement & {
-  setOptions?: (options: any) => void;
+  setOptions?: (options: unknown) => void;
 };
 
 function getDeviceId() {
@@ -45,7 +45,7 @@ export default function Page() {
             }
 
             const data = await res.json();
-            return data.client_secret;
+            return data.client_secret as string;
           }
         },
 
@@ -67,7 +67,7 @@ export default function Page() {
           density: "normal",
           color: {
             grayscale: {
-              hue: 98,  // hex #264017
+              hue: 98, // hex #264017
               tint: 9,
               shade: 4
             },
@@ -83,7 +83,8 @@ export default function Page() {
         },
 
         startScreen: {
-          greeting: "Hi there! I'm Sage, your Grow Guide. What can I help you nurture today?",
+          greeting:
+            "Hi there! I'm Sage, your Grow Guide. What can I help you nurture today?",
           prompts: [
             {
               icon: "circle-question",
