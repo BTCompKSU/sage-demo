@@ -1,5 +1,10 @@
-// app/api/chatkit/session/route.ts
+// app/api/create-session/route.ts
 import { NextRequest, NextResponse } from "next/server";
+
+function mask(value: string) {
+  if (value.length <= 8) return "***";
+  return `${value.slice(0, 4)}…${value.slice(-4)}`;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,21 +13,25 @@ export async function POST(req: NextRequest) {
 
     if (!apiKey || !workflowId) {
       return NextResponse.json(
-        { error: "Missing OPENAI_API_KEY or NEXT_PUBLIC_CHATKIT_WORKFLOW_ID" },
+        {
+          error: "Missing required env vars",
+          has_OPENAI_API_KEY: Boolean(apiKey),
+          has_NEXT_PUBLIC_CHATKIT_WORKFLOW_ID: Boolean(workflowId)
+        },
         { status: 500 }
       );
     }
 
-    // optional JSON body with deviceId
+    // Optional deviceId from body
     let deviceId = "sage-grow-guide";
     try {
       const body = await req.json();
       if (body?.deviceId) deviceId = body.deviceId;
     } catch {
-      // no body – fine, keep default
+      // ignore
     }
 
-    const res = await fetch("https://api.openai.com/v1/chatkit/sessions", {
+    const upstream = await fetch("https://api.openai.com/v1/chatkit/sessions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -35,24 +44,26 @@ export async function POST(req: NextRequest) {
       })
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("ChatKit session creation failed", res.status, text);
+    const text = await upstream.text();
+
+    if (!upstream.ok) {
       return NextResponse.json(
-        { error: "Failed to create ChatKit session", detail: text },
-        { status: res.status }
+        {
+          error: "Upstream OpenAI call failed",
+          upstream_status: upstream.status,
+          workflowId: mask(workflowId),
+          apiKey: mask(apiKey),
+          upstream_body: text
+        },
+        { status: upstream.status }
       );
     }
 
-    const data = await res.json();
-    return NextResponse.json(
-      { client_secret: data.client_secret },
-      { status: 200 }
-    );
+    const data = JSON.parse(text);
+    return NextResponse.json({ client_secret: data.client_secret }, { status: 200 });
   } catch (err) {
-    console.error("Unexpected error creating ChatKit session", err);
     return NextResponse.json(
-      { error: "Unexpected error creating ChatKit session" },
+      { error: "Unexpected error", detail: String(err) },
       { status: 500 }
     );
   }
